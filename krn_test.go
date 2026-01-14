@@ -831,7 +831,7 @@ func TestBuilder(t *testing.T) {
 
 	t.Run("error propagation stops further operations", func(t *testing.T) {
 		_, err := New().
-			Resource("", "iso27001"). // Error here
+			Resource("", "iso27001").  // Error here
 			Resource("controls", "a"). // Should not panic
 			Version("v1").             // Should not panic
 			Build()

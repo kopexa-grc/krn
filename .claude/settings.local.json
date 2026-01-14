@@ -12,7 +12,10 @@
       "Bash(git commit:*)",
       "Bash(golangci-lint:*)",
       "Bash(go mod tidy:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gofmt:*)"
     ]
   }
 }

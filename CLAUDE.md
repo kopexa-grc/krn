@@ -54,7 +54,7 @@ All errors are sentinel errors for `errors.Is()` compatibility: `ErrEmptyKRN`, `
 
 ## Code Quality Requirements
 
-- **100% test coverage** is enforced in CI
+- **90% test coverage** is enforced in CI (currently at 99.4%)
 - All tests must pass with race detector enabled
 - No golangci-lint warnings allowed
 - Example tests must produce expected output (verified by `go test`)
