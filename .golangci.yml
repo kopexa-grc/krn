@@ -1,5 +1,3 @@
-version: "2"
-
 run:
   timeout: 5m
   modules-download-mode: readonly
@@ -14,8 +12,11 @@ linters:
     - goconst
     - gocritic
     - gocyclo
+    - gofmt
+    - goimports
     - goprintffuncname
     - gosec
+    - gosimple
     - govet
     - ineffassign
     - misspell
@@ -24,25 +25,12 @@ linters:
     - nolintlint
     - revive
     - staticcheck
+    - stylecheck
+    - typecheck
     - unconvert
     - unparam
     - unused
     - whitespace
-  exclusions:
-    rules:
-      - path: _test\.go
-        linters:
-          - dupl
-          - gosec
-          - goconst
-      - path: example_test\.go
-        linters:
-          - gocritic
-
-formatters:
-  enable:
-    - gofmt
-    - goimports
 
 linters-settings:
   dupl:
@@ -59,6 +47,8 @@ linters-settings:
       - opinionated
       - performance
       - style
+  goimports:
+    local-prefixes: github.com/kopexa-grc/krn
   revive:
     rules:
       - name: blank-imports
@@ -83,7 +73,18 @@ linters-settings:
       - name: empty-block
       - name: superfluous-else
       - name: unreachable-code
+  stylecheck:
+    checks: ["all", "-ST1000", "-ST1003"]
 
 issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - gosec
+        - goconst
+    - path: example_test\.go
+      linters:
+        - gocritic
   max-issues-per-linter: 0
   max-same-issues: 0
