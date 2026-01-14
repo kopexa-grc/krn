@@ -1,0 +1,80 @@
+name: TypeScript Compatibility Issue
+description: Report a compatibility issue between Go and TypeScript implementations
+title: "[Compatibility]: "
+labels: ["compatibility", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a compatibility issue!
+
+        Both the Go and TypeScript KRN packages should behave identically.
+        The Go package is the source of truth.
+
+        **Important:** After fixing, a test case should be added to the shared fixtures:
+        [kopexa-grc/krn-fixtures](https://github.com/kopexa-grc/krn-fixtures)
+
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: The KRN string or operation that produces different results.
+      placeholder: "//kopexa.com/frameworks/iso27001"
+    validations:
+      required: true
+
+  - type: textarea
+    id: go-behavior
+    attributes:
+      label: Go Behavior
+      description: What does the Go package do?
+      placeholder: |
+        ```go
+        k, err := krn.Parse("//kopexa.com/...")
+        // Result: ...
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: ts-behavior
+    attributes:
+      label: TypeScript Behavior
+      description: What does the TypeScript package do?
+      placeholder: |
+        ```typescript
+        const k = KRN.parse("//kopexa.com/...");
+        // Result: ...
+        ```
+    validations:
+      required: true
+
+  - type: dropdown
+    id: fix-location
+    attributes:
+      label: Where should this be fixed?
+      description: Since Go is the source of truth, TypeScript usually needs to be updated.
+      options:
+        - TypeScript package needs to match Go
+        - Go behavior is incorrect and needs fixing
+        - Both need changes
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: versions
+    attributes:
+      label: Package Versions
+      description: Which versions are you comparing?
+      placeholder: |
+        Go: v1.0.0
+        TypeScript: v1.0.0
+
+  - type: checkboxes
+    id: fixtures
+    attributes:
+      label: Shared Fixtures
+      description: After this is fixed, a test case should be added to the shared fixtures.
+      options:
+        - label: I can submit a PR to [krn-fixtures](https://github.com/kopexa-grc/krn-fixtures) with this test case
