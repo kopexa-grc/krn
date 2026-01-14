@@ -13,35 +13,35 @@ import (
 
 // Fixtures represents the structure of testcases.json
 type Fixtures struct {
-	Version    string `json:"version"`
-	Parse      ParseFixtures `json:"parse"`
-	RoundTrip  []string `json:"roundTrip"`
-	Validation ValidationFixtures `json:"validation"`
+	Version        string               `json:"version"`
+	Parse          ParseFixtures        `json:"parse"`
+	RoundTrip      []string             `json:"roundTrip"`
+	Validation     ValidationFixtures   `json:"validation"`
 	SafeResourceID []SafeResourceIDCase `json:"safeResourceId"`
-	Operations OperationsFixtures `json:"operations"`
-	ErrorCodes []string `json:"errorCodes"`
+	Operations     OperationsFixtures   `json:"operations"`
+	ErrorCodes     []string             `json:"errorCodes"`
 }
 
 type ParseFixtures struct {
-	Valid   []ValidParseCase `json:"valid"`
+	Valid   []ValidParseCase   `json:"valid"`
 	Invalid []InvalidParseCase `json:"invalid"`
 }
 
 type ValidParseCase struct {
-	Name     string `json:"name"`
-	Input    string `json:"input"`
+	Name     string        `json:"name"`
+	Input    string        `json:"input"`
 	Expected ParseExpected `json:"expected"`
 }
 
 type ParseExpected struct {
-	Service            *string `json:"service"`
-	Version            *string `json:"version"`
+	Service            *string           `json:"service"`
+	Version            *string           `json:"version"`
 	Segments           []SegmentExpected `json:"segments"`
-	Depth              *int `json:"depth"`
-	Basename           *string `json:"basename"`
-	BasenameCollection *string `json:"basenameCollection"`
-	FullDomain         *string `json:"fullDomain"`
-	Path               *string `json:"path"`
+	Depth              *int              `json:"depth"`
+	Basename           *string           `json:"basename"`
+	BasenameCollection *string           `json:"basenameCollection"`
+	FullDomain         *string           `json:"fullDomain"`
+	Path               *string           `json:"path"`
 }
 
 type SegmentExpected struct {
@@ -57,14 +57,14 @@ type InvalidParseCase struct {
 
 type ValidationFixtures struct {
 	ResourceID ResourceIDValidation `json:"resourceId"`
-	Version    VersionValidation `json:"version"`
-	Service    ServiceValidation `json:"service"`
+	Version    VersionValidation    `json:"version"`
+	Service    ServiceValidation    `json:"service"`
 }
 
 type ResourceIDValidation struct {
 	Valid     []string `json:"valid"`
 	Invalid   []string `json:"invalid"`
-	MaxLength int `json:"maxLength"`
+	MaxLength int      `json:"maxLength"`
 }
 
 type VersionValidation struct {
@@ -83,17 +83,17 @@ type SafeResourceIDCase struct {
 }
 
 type OperationsFixtures struct {
-	Parent         []ParentCase `json:"parent"`
-	WithVersion    []WithVersionCase `json:"withVersion"`
+	Parent         []ParentCase         `json:"parent"`
+	WithVersion    []WithVersionCase    `json:"withVersion"`
 	WithoutVersion []WithoutVersionCase `json:"withoutVersion"`
-	WithService    []WithServiceCase `json:"withService"`
+	WithService    []WithServiceCase    `json:"withService"`
 	WithoutService []WithoutServiceCase `json:"withoutService"`
-	Child          []ChildCase `json:"child"`
-	ResourceID     []ResourceIDCase `json:"resourceId"`
+	Child          []ChildCase          `json:"child"`
+	ResourceID     []ResourceIDCase     `json:"resourceId"`
 }
 
 type ParentCase struct {
-	Input    string `json:"input"`
+	Input    string  `json:"input"`
 	Expected *string `json:"expected"`
 }
 
@@ -127,8 +127,8 @@ type ChildCase struct {
 }
 
 type ResourceIDCase struct {
-	Input         string `json:"input"`
-	Collection    string `json:"collection"`
+	Input         string  `json:"input"`
+	Collection    string  `json:"collection"`
 	Expected      *string `json:"expected"`
 	ExpectedError *string `json:"expectedError"`
 }
@@ -472,12 +472,12 @@ func TestFixtures_ErrorCodes(t *testing.T) {
 	fixtures := loadFixtures(t)
 
 	expectedErrors := map[string]error{
-		"EMPTY_KRN":          ErrEmptyKRN,
-		"INVALID_KRN":        ErrInvalidKRN,
-		"INVALID_DOMAIN":     ErrInvalidDomain,
+		"EMPTY_KRN":           ErrEmptyKRN,
+		"INVALID_KRN":         ErrInvalidKRN,
+		"INVALID_DOMAIN":      ErrInvalidDomain,
 		"INVALID_RESOURCE_ID": ErrInvalidResourceID,
-		"INVALID_VERSION":    ErrInvalidVersion,
-		"RESOURCE_NOT_FOUND": ErrResourceNotFound,
+		"INVALID_VERSION":     ErrInvalidVersion,
+		"RESOURCE_NOT_FOUND":  ErrResourceNotFound,
 	}
 
 	if len(fixtures.ErrorCodes) != len(expectedErrors) {
