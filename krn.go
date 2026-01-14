@@ -142,10 +142,6 @@ func Parse(s string) (*KRN, error) {
 		})
 	}
 
-	if len(segments) == 0 {
-		return nil, fmt.Errorf("%w: must have at least one resource", ErrInvalidKRN)
-	}
-
 	return &KRN{
 		service:  service,
 		segments: segments,
