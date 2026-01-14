@@ -97,16 +97,17 @@ func Parse(s string) (*KRN, error) {
 	var service string
 	domain := parts[0]
 
-	if domain == Domain {
+	switch {
+	case domain == Domain:
 		// Simple case: //kopexa.com/...
 		service = ""
-	} else if strings.HasSuffix(domain, "."+Domain) {
+	case strings.HasSuffix(domain, "."+Domain):
 		// Service case: //{service}.kopexa.com/...
 		service = strings.TrimSuffix(domain, "."+Domain)
 		if !IsValidService(service) {
 			return nil, fmt.Errorf("%w: invalid service name %s", ErrInvalidDomain, service)
 		}
-	} else {
+	default:
 		return nil, fmt.Errorf("%w: expected %s or {service}.%s, got %s", ErrInvalidDomain, Domain, Domain, domain)
 	}
 
