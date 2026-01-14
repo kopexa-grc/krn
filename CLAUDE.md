@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 KRN (Kopexa Resource Names) is a Go package implementing resource identifiers following Google's Resource Name Design. The format is:
 
 ```
-//kopexa.com/{service}/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
+//kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
 ```
 
 ## Build & Test Commands
@@ -27,7 +27,7 @@ go test -run TestParse/simple_KRN ./...
 # Run benchmarks
 go test -bench=. ./...
 
-# Run linter (requires golangci-lint v2)
+# Run linter (golangci-lint v1.64+)
 golangci-lint run
 
 # Verify go.mod is tidy
@@ -48,13 +48,9 @@ This is a single-package Go library with no external dependencies:
 - `Segment` - A collection/resource-id pair
 - `Builder` - Fluent API for constructing KRNs
 
-### Services
-
-Valid services are constants: `ServiceCatalog`, `ServiceISMS`, `ServiceOrg`, `ServiceAudit`, `ServicePolicy`
-
 ### Error Types
 
-All errors are sentinel errors for `errors.Is()` compatibility: `ErrEmptyKRN`, `ErrInvalidKRN`, `ErrInvalidDomain`, `ErrInvalidService`, `ErrInvalidResourceID`, `ErrInvalidVersion`, `ErrResourceNotFound`
+All errors are sentinel errors for `errors.Is()` compatibility: `ErrEmptyKRN`, `ErrInvalidKRN`, `ErrInvalidDomain`, `ErrInvalidResourceID`, `ErrInvalidVersion`, `ErrResourceNotFound`
 
 ## Code Quality Requirements
 
