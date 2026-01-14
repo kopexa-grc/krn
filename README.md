@@ -189,25 +189,55 @@ k1.Equals(k2)                                        // true
 k1.EqualsString("//kopexa.com/frameworks/iso27001")  // true
 ```
 
+### Framework Versioning
+
+Compliance frameworks often have different editions (e.g., ISO 27001:2013 vs ISO 27001:2022).
+Include the edition year or version number in the framework resource ID:
+
+```go
+// ISO 27001:2022
+k := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001-2022/controls/5.1.1")
+
+// ISO 27001:2013 (different control numbering)
+k := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001-2013/controls/A.5.1.1")
+
+// NIST CSF 2.0
+k := krn.MustParse("//catalog.kopexa.com/frameworks/nist-csf-2.0/controls/GV.OC-01")
+
+// CIS AWS Benchmark v1.4.0
+k := krn.MustParse("//catalog.kopexa.com/frameworks/cis-aws-1.4.0/controls/1.1.1")
+
+// SOC 2 Type II 2017
+k := krn.MustParse("//catalog.kopexa.com/frameworks/soc2-2017/controls/CC1.1")
+```
+
+**Naming conventions:**
+- Use lowercase with hyphens: `iso27001-2022`, `nist-csf-2.0`
+- Include the year or version: `iso27001-2022`, `cis-aws-1.4.0`
+- Keep it readable: `pci-dss-4.0` not `pcidssv4.0`
+
+**Note:** The `@version` suffix (e.g., `@v1`, `@draft`) is for versioning the KRN content itself
+(like draft vs published mappings), not for framework editions.
+
 ### Control Mapping Example
 
 A common use case is mapping controls between frameworks:
 
 ```go
-// ISO 27001 control (using dot notation for control numbers)
-controlA := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001/controls/5.1.1")
+// ISO 27001:2022 control
+controlA := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001-2022/controls/5.1.1")
 
-// CIS control that maps to it
-controlB := krn.MustParse("//catalog.kopexa.com/frameworks/cis-aws/controls/1.1.1")
+// CIS AWS v1.5.0 control that maps to it
+controlB := krn.MustParse("//catalog.kopexa.com/frameworks/cis-aws-1.5.0/controls/1.1.1")
 
-// NIST CSF control
-controlC := krn.MustParse("//catalog.kopexa.com/frameworks/nist-csf/controls/PR.AC-1")
+// NIST CSF 2.0 control
+controlC := krn.MustParse("//catalog.kopexa.com/frameworks/nist-csf-2.0/controls/GV.OC-01")
 
 // In a mapping file:
-// - krn: //catalog.kopexa.com/frameworks/iso27001/controls/5.1.1
+// - krn: //catalog.kopexa.com/frameworks/iso27001-2022/controls/5.1.1
 //   maps_to:
-//     - krn: //catalog.kopexa.com/frameworks/cis-aws/controls/1.1.1
-//     - krn: //catalog.kopexa.com/frameworks/nist-csf/controls/PR.AC-1
+//     - krn: //catalog.kopexa.com/frameworks/cis-aws-1.5.0/controls/1.1.1
+//     - krn: //catalog.kopexa.com/frameworks/nist-csf-2.0/controls/GV.OC-01
 ```
 
 ### Utility Functions
