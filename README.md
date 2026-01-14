@@ -1,10 +1,16 @@
+<div align="center">
+
 # KRN - Kopexa Resource Names
+
+**Part of the [Kopexa](https://kopexa.com) GRC Platform**
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/kopexa-grc/krn.svg)](https://pkg.go.dev/github.com/kopexa-grc/krn)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kopexa-grc/krn)](https://goreportcard.com/report/github.com/kopexa-grc/krn)
 [![CI](https://github.com/kopexa-grc/krn/actions/workflows/ci.yml/badge.svg)](https://github.com/kopexa-grc/krn/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/kopexa-grc/krn/branch/main/graph/badge.svg)](https://codecov.io/gh/kopexa-grc/krn)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+</div>
 
 A Go package for working with Kopexa Resource Names (KRN), following [Google's Resource Name Design](https://cloud.google.com/apis/design/resource_names).
 
@@ -315,8 +321,20 @@ if err != nil {
 }
 ```
 
+## Related Packages
+
+- [@kopexa/krn](https://github.com/kopexa-grc/krn-js) - TypeScript implementation
+- [krn-fixtures](https://github.com/kopexa-grc/krn-fixtures) - Shared test fixtures
+
+## About Kopexa
+
+[Kopexa](https://kopexa.com) is a modern GRC (Governance, Risk, and Compliance) platform that helps organizations manage their compliance requirements efficiently.
+
+- **Website**: [kopexa.com](https://kopexa.com)
+- **Documentation**: [docs.kopexa.com](https://docs.kopexa.com)
+
 ## License
 
-Copyright (c) Kopexa GRC
+Copyright (c) [Kopexa GRC](https://kopexa.com)
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.

@@ -40,7 +40,9 @@
       "Bash(git pull:*)",
       "Bash(gh pr update-branch:*)",
       "Bash(gh pr checks:*)",
-      "Bash(git submodule add:*)"
+      "Bash(git submodule add:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh repo view:*)"
     ]
   }
 }
