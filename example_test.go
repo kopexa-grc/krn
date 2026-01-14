@@ -10,19 +10,19 @@ import (
 )
 
 func ExampleParse() {
-	k, err := krn.Parse("//kopexa.com/catalog/frameworks/iso27001")
+	k, err := krn.Parse("//kopexa.com/frameworks/iso27001")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(k.Service())
 	fmt.Println(k.Basename())
+	fmt.Println(k.Path())
 	// Output:
-	// catalog
 	// iso27001
+	// frameworks/iso27001
 }
 
 func ExampleParse_withVersion() {
-	k, err := krn.Parse("//kopexa.com/catalog/frameworks/iso27001@v1.2.3")
+	k, err := krn.Parse("//kopexa.com/frameworks/iso27001@v1.2.3")
 	if err != nil {
 		panic(err)
 	}
@@ -34,7 +34,7 @@ func ExampleParse_withVersion() {
 }
 
 func ExampleMustParse() {
-	k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+	k := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 	fmt.Println(k.Depth())
 	fmt.Println(k.Basename())
 	// Output:
@@ -43,7 +43,7 @@ func ExampleMustParse() {
 }
 
 func ExampleIsValid() {
-	fmt.Println(krn.IsValid("//kopexa.com/catalog/frameworks/iso27001"))
+	fmt.Println(krn.IsValid("//kopexa.com/frameworks/iso27001"))
 	fmt.Println(krn.IsValid("invalid"))
 	// Output:
 	// true
@@ -51,7 +51,7 @@ func ExampleIsValid() {
 }
 
 func ExampleNew() {
-	k, err := krn.New(krn.ServiceCatalog).
+	k, err := krn.New().
 		Resource("frameworks", "iso27001").
 		Build()
 	if err != nil {
@@ -59,11 +59,11 @@ func ExampleNew() {
 	}
 	fmt.Println(k.String())
 	// Output:
-	// //kopexa.com/catalog/frameworks/iso27001
+	// //kopexa.com/frameworks/iso27001
 }
 
 func ExampleNew_nested() {
-	k, err := krn.New(krn.ServiceCatalog).
+	k, err := krn.New().
 		Resource("frameworks", "iso27001").
 		Resource("controls", "a-5-1").
 		Version("v2").
@@ -73,23 +73,23 @@ func ExampleNew_nested() {
 	}
 	fmt.Println(k.String())
 	// Output:
-	// //kopexa.com/catalog/frameworks/iso27001/controls/a-5-1@v2
+	// //kopexa.com/frameworks/iso27001/controls/a-5-1@v2
 }
 
 func ExampleNewChild() {
-	parent := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+	parent := krn.MustParse("//kopexa.com/frameworks/iso27001")
 	child, err := krn.NewChild(parent, "controls", "a-5-1")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(child.String())
 	// Output:
-	// //kopexa.com/catalog/frameworks/iso27001/controls/a-5-1
+	// //kopexa.com/frameworks/iso27001/controls/a-5-1
 }
 
 func ExampleNewChildFromString() {
 	child, err := krn.NewChildFromString(
-		"//kopexa.com/isms/tenants/acme-corp",
+		"//kopexa.com/tenants/acme-corp",
 		"workspaces",
 		"main",
 	)
@@ -98,11 +98,11 @@ func ExampleNewChildFromString() {
 	}
 	fmt.Println(child.String())
 	// Output:
-	// //kopexa.com/isms/tenants/acme-corp/workspaces/main
+	// //kopexa.com/tenants/acme-corp/workspaces/main
 }
 
 func ExampleKRN_ResourceID() {
-	k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+	k := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 	frameworkID, _ := k.ResourceID("frameworks")
 	controlID, _ := k.ResourceID("controls")
 	fmt.Println(frameworkID)
@@ -113,34 +113,34 @@ func ExampleKRN_ResourceID() {
 }
 
 func ExampleKRN_Parent() {
-	k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+	k := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 	parent := k.Parent()
 	fmt.Println(parent.String())
 	// Output:
-	// //kopexa.com/catalog/frameworks/iso27001
+	// //kopexa.com/frameworks/iso27001
 }
 
 func ExampleKRN_WithVersion() {
-	k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+	k := krn.MustParse("//kopexa.com/frameworks/iso27001")
 	versioned, err := k.WithVersion("v1")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(versioned.String())
 	// Output:
-	// //kopexa.com/catalog/frameworks/iso27001@v1
+	// //kopexa.com/frameworks/iso27001@v1
 }
 
 func ExampleKRN_WithoutVersion() {
-	k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001@v1")
+	k := krn.MustParse("//kopexa.com/frameworks/iso27001@v1")
 	unversioned := k.WithoutVersion()
 	fmt.Println(unversioned.String())
 	// Output:
-	// //kopexa.com/catalog/frameworks/iso27001
+	// //kopexa.com/frameworks/iso27001
 }
 
 func ExampleKRN_Segments() {
-	k := krn.MustParse("//kopexa.com/isms/tenants/acme/workspaces/main")
+	k := krn.MustParse("//kopexa.com/tenants/acme/workspaces/main")
 	for _, seg := range k.Segments() {
 		fmt.Printf("%s: %s\n", seg.Collection, seg.ResourceID)
 	}
@@ -150,7 +150,7 @@ func ExampleKRN_Segments() {
 }
 
 func ExampleGetResource() {
-	id, err := krn.GetResource("//kopexa.com/catalog/frameworks/iso27001", "frameworks")
+	id, err := krn.GetResource("//kopexa.com/frameworks/iso27001", "frameworks")
 	if err != nil {
 		panic(err)
 	}
@@ -183,4 +183,19 @@ func ExampleSafeResourceID() {
 	// Output:
 	// Hello-World
 	// leading-dash
+}
+
+// Example showing control mapping use case
+func Example_controlMapping() {
+	// Framework A control
+	controlA := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
+
+	// Framework B control that maps to it
+	controlB := krn.MustParse("//kopexa.com/frameworks/nist-csf/controls/pr-ac-1")
+
+	fmt.Printf("Control %s maps to %s\n",
+		controlA.MustResourceID("controls"),
+		controlB.MustResourceID("controls"))
+	// Output:
+	// Control a-5-1 maps to pr-ac-1
 }

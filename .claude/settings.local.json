@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go mod init:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: initial KRN implementation\n\nImplement Kopexa Resource Names \\(KRN\\) following Google''s Resource Name Design.\n\nFeatures:\n- Parse and validate KRN strings\n- Fluent builder API for creating KRNs\n- Child KRN creation from parent\n- Version support \\(@v1, @v1.2.3, @latest, @draft\\)\n- Resource ID extraction by collection name\n- Service constants \\(catalog, isms, org, audit, policy\\)\n- Comprehensive error types\nEOF\n\\)\")",
+      "Bash(go test:*)",
+      "Bash(go tool cover:*)",
+      "Bash(git commit:*)",
+      "Bash(golangci-lint:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}

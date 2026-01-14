@@ -18,11 +18,8 @@ func TestParse(t *testing.T) {
 	}{
 		{
 			name:  "simple KRN",
-			input: "//kopexa.com/catalog/frameworks/iso27001",
+			input: "//kopexa.com/frameworks/iso27001",
 			checkFunc: func(t *testing.T, k *KRN) {
-				if k.Service() != ServiceCatalog {
-					t.Errorf("expected service %s, got %s", ServiceCatalog, k.Service())
-				}
 				if k.Depth() != 1 {
 					t.Errorf("expected depth 1, got %d", k.Depth())
 				}
@@ -33,7 +30,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "nested KRN",
-			input: "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1",
+			input: "//kopexa.com/frameworks/iso27001/controls/a-5-1",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Depth() != 2 {
 					t.Errorf("expected depth 2, got %d", k.Depth())
@@ -48,7 +45,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "KRN with version",
-			input: "//kopexa.com/catalog/frameworks/iso27001@v2",
+			input: "//kopexa.com/frameworks/iso27001@v2",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if !k.HasVersion() {
 					t.Error("expected HasVersion to be true")
@@ -60,7 +57,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "KRN with semantic version",
-			input: "//kopexa.com/catalog/frameworks/iso27001@v1.2.3",
+			input: "//kopexa.com/frameworks/iso27001@v1.2.3",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Version() != "v1.2.3" {
 					t.Errorf("expected version v1.2.3, got %s", k.Version())
@@ -69,7 +66,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "KRN with latest version",
-			input: "//kopexa.com/catalog/frameworks/iso27001@latest",
+			input: "//kopexa.com/frameworks/iso27001@latest",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Version() != "latest" {
 					t.Errorf("expected version latest, got %s", k.Version())
@@ -78,7 +75,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "KRN with draft version",
-			input: "//kopexa.com/catalog/frameworks/iso27001@draft",
+			input: "//kopexa.com/frameworks/iso27001@draft",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Version() != "draft" {
 					t.Errorf("expected version draft, got %s", k.Version())
@@ -87,46 +84,25 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "deep nested KRN",
-			input: "//kopexa.com/isms/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456",
+			input: "//kopexa.com/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Depth() != 3 {
 					t.Errorf("expected depth 3, got %d", k.Depth())
 				}
-				if k.Service() != ServiceISMS {
-					t.Errorf("expected service %s, got %s", ServiceISMS, k.Service())
-				}
 			},
 		},
 		{
-			name:  "org service",
-			input: "//kopexa.com/org/tenants/acme-corp/workspaces/ws-main",
+			name:  "controls KRN",
+			input: "//kopexa.com/controls/ctrl-123",
 			checkFunc: func(t *testing.T, k *KRN) {
-				if k.Service() != ServiceOrg {
-					t.Errorf("expected service %s, got %s", ServiceOrg, k.Service())
-				}
-			},
-		},
-		{
-			name:  "audit service",
-			input: "//kopexa.com/audit/logs/log-123",
-			checkFunc: func(t *testing.T, k *KRN) {
-				if k.Service() != ServiceAudit {
-					t.Errorf("expected service %s, got %s", ServiceAudit, k.Service())
-				}
-			},
-		},
-		{
-			name:  "policy service",
-			input: "//kopexa.com/policy/rules/rule-123",
-			checkFunc: func(t *testing.T, k *KRN) {
-				if k.Service() != ServicePolicy {
-					t.Errorf("expected service %s, got %s", ServicePolicy, k.Service())
+				if k.Basename() != "ctrl-123" {
+					t.Errorf("expected basename ctrl-123, got %s", k.Basename())
 				}
 			},
 		},
 		{
 			name:  "resource ID with dots",
-			input: "//kopexa.com/catalog/frameworks/iso.27001.2022",
+			input: "//kopexa.com/frameworks/iso.27001.2022",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Basename() != "iso.27001.2022" {
 					t.Errorf("expected basename iso.27001.2022, got %s", k.Basename())
@@ -135,7 +111,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "resource ID with underscores",
-			input: "//kopexa.com/catalog/frameworks/iso_27001_2022",
+			input: "//kopexa.com/frameworks/iso_27001_2022",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Basename() != "iso_27001_2022" {
 					t.Errorf("expected basename iso_27001_2022, got %s", k.Basename())
@@ -144,7 +120,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "resource ID with mixed characters",
-			input: "//kopexa.com/catalog/frameworks/ISO-27001_v2.0",
+			input: "//kopexa.com/frameworks/ISO-27001_v2.0",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Basename() != "ISO-27001_v2.0" {
 					t.Errorf("expected basename ISO-27001_v2.0, got %s", k.Basename())
@@ -153,7 +129,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:  "single character resource ID",
-			input: "//kopexa.com/catalog/frameworks/x",
+			input: "//kopexa.com/frameworks/x",
 			checkFunc: func(t *testing.T, k *KRN) {
 				if k.Basename() != "x" {
 					t.Errorf("expected basename x, got %s", k.Basename())
@@ -167,77 +143,82 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:    "missing prefix",
-			input:   "kopexa.com/catalog/frameworks/iso27001",
+			input:   "kopexa.com/frameworks/iso27001",
 			wantErr: ErrInvalidKRN,
 		},
 		{
 			name:    "wrong domain",
-			input:   "//google.com/catalog/frameworks/iso27001",
+			input:   "//google.com/frameworks/iso27001",
 			wantErr: ErrInvalidDomain,
 		},
 		{
-			name:    "invalid service",
-			input:   "//kopexa.com/invalid/frameworks/iso27001",
-			wantErr: ErrInvalidService,
-		},
-		{
 			name:    "missing resource",
-			input:   "//kopexa.com/catalog",
+			input:   "//kopexa.com",
 			wantErr: ErrInvalidKRN,
 		},
 		{
 			name:    "odd number of path segments",
-			input:   "//kopexa.com/catalog/frameworks",
+			input:   "//kopexa.com/frameworks",
 			wantErr: ErrInvalidKRN,
 		},
 		{
 			name:    "empty collection",
-			input:   "//kopexa.com/catalog//iso27001",
+			input:   "//kopexa.com//iso27001",
+			wantErr: ErrInvalidKRN,
+		},
+		{
+			name:    "nested empty collection",
+			input:   "//kopexa.com/frameworks/iso27001//a-5-1",
 			wantErr: ErrInvalidKRN,
 		},
 		{
 			name:    "invalid resource ID - starts with dash",
-			input:   "//kopexa.com/catalog/frameworks/-iso27001",
+			input:   "//kopexa.com/frameworks/-iso27001",
 			wantErr: ErrInvalidResourceID,
 		},
 		{
 			name:    "invalid resource ID - ends with dash",
-			input:   "//kopexa.com/catalog/frameworks/iso27001-",
+			input:   "//kopexa.com/frameworks/iso27001-",
 			wantErr: ErrInvalidResourceID,
 		},
 		{
 			name:    "invalid resource ID - starts with dot",
-			input:   "//kopexa.com/catalog/frameworks/.iso27001",
+			input:   "//kopexa.com/frameworks/.iso27001",
 			wantErr: ErrInvalidResourceID,
 		},
 		{
 			name:    "invalid resource ID - ends with dot",
-			input:   "//kopexa.com/catalog/frameworks/iso27001.",
+			input:   "//kopexa.com/frameworks/iso27001.",
 			wantErr: ErrInvalidResourceID,
 		},
 		{
 			name:    "invalid resource ID - contains space",
-			input:   "//kopexa.com/catalog/frameworks/iso 27001",
+			input:   "//kopexa.com/frameworks/iso 27001",
 			wantErr: ErrInvalidResourceID,
 		},
 		{
 			name:    "invalid resource ID - contains special char",
-			input:   "//kopexa.com/catalog/frameworks/iso!27001",
+			input:   "//kopexa.com/frameworks/iso!27001",
+			wantErr: ErrInvalidResourceID,
+		},
+		{
+			name:    "nested invalid resource ID",
+			input:   "//kopexa.com/frameworks/iso27001/controls/-invalid",
 			wantErr: ErrInvalidResourceID,
 		},
 		{
 			name:    "invalid version format",
-			input:   "//kopexa.com/catalog/frameworks/iso27001@invalid",
+			input:   "//kopexa.com/frameworks/iso27001@invalid",
 			wantErr: ErrInvalidVersion,
 		},
 		{
 			name:    "invalid version - missing v prefix",
-			input:   "//kopexa.com/catalog/frameworks/iso27001@1.0",
+			input:   "//kopexa.com/frameworks/iso27001@1.0",
 			wantErr: ErrInvalidVersion,
 		},
 		{
 			name:    "invalid version - too many parts",
-			input:   "//kopexa.com/catalog/frameworks/iso27001@v1.2.3.4",
+			input:   "//kopexa.com/frameworks/iso27001@v1.2.3.4",
 			wantErr: ErrInvalidVersion,
 		},
 	}
@@ -268,7 +249,7 @@ func TestParse(t *testing.T) {
 
 func TestMustParse(t *testing.T) {
 	t.Run("valid KRN", func(t *testing.T) {
-		k := MustParse("//kopexa.com/catalog/frameworks/iso27001")
+		k := MustParse("//kopexa.com/frameworks/iso27001")
 		if k.Basename() != "iso27001" {
 			t.Errorf("expected basename iso27001, got %s", k.Basename())
 		}
@@ -289,11 +270,11 @@ func TestIsValid(t *testing.T) {
 		input string
 		want  bool
 	}{
-		{"//kopexa.com/catalog/frameworks/iso27001", true},
-		{"//kopexa.com/catalog/frameworks/iso27001@v1", true},
+		{"//kopexa.com/frameworks/iso27001", true},
+		{"//kopexa.com/frameworks/iso27001@v1", true},
 		{"", false},
 		{"invalid", false},
-		{"//kopexa.com/invalid/frameworks/iso27001", false},
+		{"//google.com/frameworks/iso27001", false},
 	}
 
 	for _, tt := range tests {
@@ -412,19 +393,19 @@ func TestGetResource(t *testing.T) {
 	}{
 		{
 			name:       "find framework",
-			krnString:  "//kopexa.com/catalog/frameworks/iso27001",
+			krnString:  "//kopexa.com/frameworks/iso27001",
 			collection: "frameworks",
 			want:       "iso27001",
 		},
 		{
 			name:       "find nested resource",
-			krnString:  "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1",
+			krnString:  "//kopexa.com/frameworks/iso27001/controls/a-5-1",
 			collection: "controls",
 			want:       "a-5-1",
 		},
 		{
 			name:       "resource not found",
-			krnString:  "//kopexa.com/catalog/frameworks/iso27001",
+			krnString:  "//kopexa.com/frameworks/iso27001",
 			collection: "controls",
 			wantErr:    ErrResourceNotFound,
 		},
@@ -466,16 +447,16 @@ func TestKRN_String(t *testing.T) {
 		want  string
 	}{
 		{
-			input: "//kopexa.com/catalog/frameworks/iso27001",
-			want:  "//kopexa.com/catalog/frameworks/iso27001",
+			input: "//kopexa.com/frameworks/iso27001",
+			want:  "//kopexa.com/frameworks/iso27001",
 		},
 		{
-			input: "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1",
-			want:  "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1",
+			input: "//kopexa.com/frameworks/iso27001/controls/a-5-1",
+			want:  "//kopexa.com/frameworks/iso27001/controls/a-5-1",
 		},
 		{
-			input: "//kopexa.com/catalog/frameworks/iso27001@v1",
-			want:  "//kopexa.com/catalog/frameworks/iso27001@v1",
+			input: "//kopexa.com/frameworks/iso27001@v1",
+			want:  "//kopexa.com/frameworks/iso27001@v1",
 		},
 	}
 
@@ -495,11 +476,11 @@ func TestKRN_Path(t *testing.T) {
 		want  string
 	}{
 		{
-			input: "//kopexa.com/catalog/frameworks/iso27001",
+			input: "//kopexa.com/frameworks/iso27001",
 			want:  "frameworks/iso27001",
 		},
 		{
-			input: "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1",
+			input: "//kopexa.com/frameworks/iso27001/controls/a-5-1",
 			want:  "frameworks/iso27001/controls/a-5-1",
 		},
 	}
@@ -514,8 +495,15 @@ func TestKRN_Path(t *testing.T) {
 	}
 }
 
+func TestKRN_RelativeResourceName(t *testing.T) {
+	k := MustParse("//kopexa.com/frameworks/iso27001")
+	if k.RelativeResourceName() != k.Path() {
+		t.Errorf("RelativeResourceName() should equal Path()")
+	}
+}
+
 func TestKRN_ResourceID(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+	k := MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 
 	t.Run("find framework", func(t *testing.T) {
 		got, err := k.ResourceID("frameworks")
@@ -546,7 +534,7 @@ func TestKRN_ResourceID(t *testing.T) {
 }
 
 func TestKRN_MustResourceID(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001")
+	k := MustParse("//kopexa.com/frameworks/iso27001")
 
 	t.Run("found", func(t *testing.T) {
 		got := k.MustResourceID("frameworks")
@@ -566,7 +554,7 @@ func TestKRN_MustResourceID(t *testing.T) {
 }
 
 func TestKRN_HasResource(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+	k := MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 
 	if !k.HasResource("frameworks") {
 		t.Error("expected HasResource(frameworks) to be true")
@@ -581,18 +569,18 @@ func TestKRN_HasResource(t *testing.T) {
 
 func TestKRN_Parent(t *testing.T) {
 	t.Run("has parent", func(t *testing.T) {
-		k := MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+		k := MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 		parent := k.Parent()
 		if parent == nil {
 			t.Fatal("expected parent, got nil")
 		}
-		if parent.String() != "//kopexa.com/catalog/frameworks/iso27001" {
-			t.Errorf("got %q, want %q", parent.String(), "//kopexa.com/catalog/frameworks/iso27001")
+		if parent.String() != "//kopexa.com/frameworks/iso27001" {
+			t.Errorf("got %q, want %q", parent.String(), "//kopexa.com/frameworks/iso27001")
 		}
 	})
 
 	t.Run("no parent for root", func(t *testing.T) {
-		k := MustParse("//kopexa.com/catalog/frameworks/iso27001")
+		k := MustParse("//kopexa.com/frameworks/iso27001")
 		parent := k.Parent()
 		if parent != nil {
 			t.Errorf("expected nil parent, got %v", parent)
@@ -600,7 +588,7 @@ func TestKRN_Parent(t *testing.T) {
 	})
 
 	t.Run("parent does not inherit version", func(t *testing.T) {
-		k := MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1@v1")
+		k := MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1@v1")
 		parent := k.Parent()
 		if parent.HasVersion() {
 			t.Error("parent should not inherit version")
@@ -609,7 +597,7 @@ func TestKRN_Parent(t *testing.T) {
 }
 
 func TestKRN_WithVersion(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001")
+	k := MustParse("//kopexa.com/frameworks/iso27001")
 
 	t.Run("add version", func(t *testing.T) {
 		versioned, err := k.WithVersion("v1")
@@ -634,14 +622,14 @@ func TestKRN_WithVersion(t *testing.T) {
 }
 
 func TestKRN_WithoutVersion(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001@v1")
+	k := MustParse("//kopexa.com/frameworks/iso27001@v1")
 
 	unversioned := k.WithoutVersion()
 	if unversioned.HasVersion() {
 		t.Error("expected no version")
 	}
-	if unversioned.String() != "//kopexa.com/catalog/frameworks/iso27001" {
-		t.Errorf("got %q, want %q", unversioned.String(), "//kopexa.com/catalog/frameworks/iso27001")
+	if unversioned.String() != "//kopexa.com/frameworks/iso27001" {
+		t.Errorf("got %q, want %q", unversioned.String(), "//kopexa.com/frameworks/iso27001")
 	}
 	// Original should be unchanged
 	if !k.HasVersion() {
@@ -650,9 +638,9 @@ func TestKRN_WithoutVersion(t *testing.T) {
 }
 
 func TestKRN_Equals(t *testing.T) {
-	k1 := MustParse("//kopexa.com/catalog/frameworks/iso27001")
-	k2 := MustParse("//kopexa.com/catalog/frameworks/iso27001")
-	k3 := MustParse("//kopexa.com/catalog/frameworks/iso27002")
+	k1 := MustParse("//kopexa.com/frameworks/iso27001")
+	k2 := MustParse("//kopexa.com/frameworks/iso27001")
+	k3 := MustParse("//kopexa.com/frameworks/iso27002")
 
 	if !k1.Equals(k2) {
 		t.Error("expected k1 to equal k2")
@@ -666,12 +654,12 @@ func TestKRN_Equals(t *testing.T) {
 }
 
 func TestKRN_EqualsString(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001")
+	k := MustParse("//kopexa.com/frameworks/iso27001")
 
-	if !k.EqualsString("//kopexa.com/catalog/frameworks/iso27001") {
+	if !k.EqualsString("//kopexa.com/frameworks/iso27001") {
 		t.Error("expected equality")
 	}
-	if k.EqualsString("//kopexa.com/catalog/frameworks/iso27002") {
+	if k.EqualsString("//kopexa.com/frameworks/iso27002") {
 		t.Error("expected inequality")
 	}
 	if k.EqualsString("invalid") {
@@ -680,7 +668,7 @@ func TestKRN_EqualsString(t *testing.T) {
 }
 
 func TestKRN_Segments(t *testing.T) {
-	k := MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+	k := MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 	segments := k.Segments()
 
 	if len(segments) != 2 {
@@ -703,15 +691,15 @@ func TestKRN_Segments(t *testing.T) {
 }
 
 func TestNewChild(t *testing.T) {
-	parent := MustParse("//kopexa.com/catalog/frameworks/iso27001")
+	parent := MustParse("//kopexa.com/frameworks/iso27001")
 
 	t.Run("valid child", func(t *testing.T) {
 		child, err := NewChild(parent, "controls", "a-5-1")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if child.String() != "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1" {
-			t.Errorf("got %q, want %q", child.String(), "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+		if child.String() != "//kopexa.com/frameworks/iso27001/controls/a-5-1" {
+			t.Errorf("got %q, want %q", child.String(), "//kopexa.com/frameworks/iso27001/controls/a-5-1")
 		}
 	})
 
@@ -737,7 +725,7 @@ func TestNewChild(t *testing.T) {
 	})
 
 	t.Run("child does not inherit version", func(t *testing.T) {
-		versionedParent := MustParse("//kopexa.com/catalog/frameworks/iso27001@v1")
+		versionedParent := MustParse("//kopexa.com/frameworks/iso27001@v1")
 		child, err := NewChild(versionedParent, "controls", "a-5-1")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -750,11 +738,11 @@ func TestNewChild(t *testing.T) {
 
 func TestNewChildFromString(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		child, err := NewChildFromString("//kopexa.com/catalog/frameworks/iso27001", "controls", "a-5-1")
+		child, err := NewChildFromString("//kopexa.com/frameworks/iso27001", "controls", "a-5-1")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if child.String() != "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1" {
+		if child.String() != "//kopexa.com/frameworks/iso27001/controls/a-5-1" {
 			t.Errorf("got %q", child.String())
 		}
 	})
@@ -769,54 +757,45 @@ func TestNewChildFromString(t *testing.T) {
 
 func TestBuilder(t *testing.T) {
 	t.Run("simple build", func(t *testing.T) {
-		k, err := New(ServiceCatalog).
+		k, err := New().
 			Resource("frameworks", "iso27001").
 			Build()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if k.String() != "//kopexa.com/catalog/frameworks/iso27001" {
+		if k.String() != "//kopexa.com/frameworks/iso27001" {
 			t.Errorf("got %q", k.String())
 		}
 	})
 
 	t.Run("nested build", func(t *testing.T) {
-		k, err := New(ServiceCatalog).
+		k, err := New().
 			Resource("frameworks", "iso27001").
 			Resource("controls", "a-5-1").
 			Build()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if k.String() != "//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1" {
+		if k.String() != "//kopexa.com/frameworks/iso27001/controls/a-5-1" {
 			t.Errorf("got %q", k.String())
 		}
 	})
 
 	t.Run("with version", func(t *testing.T) {
-		k, err := New(ServiceCatalog).
+		k, err := New().
 			Resource("frameworks", "iso27001").
 			Version("v1").
 			Build()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if k.String() != "//kopexa.com/catalog/frameworks/iso27001@v1" {
+		if k.String() != "//kopexa.com/frameworks/iso27001@v1" {
 			t.Errorf("got %q", k.String())
 		}
 	})
 
-	t.Run("invalid service", func(t *testing.T) {
-		_, err := New("invalid").
-			Resource("frameworks", "iso27001").
-			Build()
-		if !errors.Is(err, ErrInvalidService) {
-			t.Errorf("expected ErrInvalidService, got %v", err)
-		}
-	})
-
 	t.Run("empty collection", func(t *testing.T) {
-		_, err := New(ServiceCatalog).
+		_, err := New().
 			Resource("", "iso27001").
 			Build()
 		if !errors.Is(err, ErrInvalidKRN) {
@@ -825,7 +804,7 @@ func TestBuilder(t *testing.T) {
 	})
 
 	t.Run("invalid resource ID", func(t *testing.T) {
-		_, err := New(ServiceCatalog).
+		_, err := New().
 			Resource("frameworks", "-invalid").
 			Build()
 		if !errors.Is(err, ErrInvalidResourceID) {
@@ -834,7 +813,7 @@ func TestBuilder(t *testing.T) {
 	})
 
 	t.Run("invalid version", func(t *testing.T) {
-		_, err := New(ServiceCatalog).
+		_, err := New().
 			Resource("frameworks", "iso27001").
 			Version("invalid").
 			Build()
@@ -844,29 +823,30 @@ func TestBuilder(t *testing.T) {
 	})
 
 	t.Run("no resources", func(t *testing.T) {
-		_, err := New(ServiceCatalog).Build()
+		_, err := New().Build()
 		if !errors.Is(err, ErrInvalidKRN) {
 			t.Errorf("expected ErrInvalidKRN, got %v", err)
 		}
 	})
 
 	t.Run("error propagation stops further operations", func(t *testing.T) {
-		_, err := New("invalid").
-			Resource("frameworks", "iso27001"). // Should not panic
-			Version("v1").                      // Should not panic
+		_, err := New().
+			Resource("", "iso27001"). // Error here
+			Resource("controls", "a"). // Should not panic
+			Version("v1").             // Should not panic
 			Build()
-		if !errors.Is(err, ErrInvalidService) {
-			t.Errorf("expected ErrInvalidService, got %v", err)
+		if !errors.Is(err, ErrInvalidKRN) {
+			t.Errorf("expected ErrInvalidKRN, got %v", err)
 		}
 	})
 }
 
 func TestBuilder_MustBuild(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		k := New(ServiceCatalog).
+		k := New().
 			Resource("frameworks", "iso27001").
 			MustBuild()
-		if k.String() != "//kopexa.com/catalog/frameworks/iso27001" {
+		if k.String() != "//kopexa.com/frameworks/iso27001" {
 			t.Errorf("got %q", k.String())
 		}
 	})
@@ -877,7 +857,7 @@ func TestBuilder_MustBuild(t *testing.T) {
 				t.Error("expected panic, got none")
 			}
 		}()
-		New("invalid").Resource("frameworks", "iso27001").MustBuild()
+		New().Resource("", "iso27001").MustBuild()
 	})
 }
 
@@ -885,7 +865,6 @@ func TestKRN_EmptySegments(t *testing.T) {
 	// Test the edge case where a KRN is created with zero segments
 	// This shouldn't happen via Parse, but test the methods handle it gracefully
 	k := &KRN{
-		service:  ServiceCatalog,
 		segments: []Segment{},
 	}
 
@@ -901,9 +880,9 @@ func TestKRN_EmptySegments(t *testing.T) {
 
 func BenchmarkParse(b *testing.B) {
 	inputs := []string{
-		"//kopexa.com/catalog/frameworks/iso27001",
-		"//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1",
-		"//kopexa.com/isms/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456@v1.2.3",
+		"//kopexa.com/frameworks/iso27001",
+		"//kopexa.com/frameworks/iso27001/controls/a-5-1",
+		"//kopexa.com/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456@v1.2.3",
 	}
 
 	for _, input := range inputs {
@@ -917,9 +896,9 @@ func BenchmarkParse(b *testing.B) {
 
 func BenchmarkString(b *testing.B) {
 	krns := []*KRN{
-		MustParse("//kopexa.com/catalog/frameworks/iso27001"),
-		MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1"),
-		MustParse("//kopexa.com/isms/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456@v1.2.3"),
+		MustParse("//kopexa.com/frameworks/iso27001"),
+		MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1"),
+		MustParse("//kopexa.com/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456@v1.2.3"),
 	}
 
 	for _, k := range krns {
@@ -934,7 +913,7 @@ func BenchmarkString(b *testing.B) {
 func BenchmarkBuilder(b *testing.B) {
 	b.Run("simple", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			_, _ = New(ServiceCatalog).
+			_, _ = New().
 				Resource("frameworks", "iso27001").
 				Build()
 		}
@@ -942,7 +921,7 @@ func BenchmarkBuilder(b *testing.B) {
 
 	b.Run("nested", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			_, _ = New(ServiceCatalog).
+			_, _ = New().
 				Resource("frameworks", "iso27001").
 				Resource("controls", "a-5-1").
 				Build()
@@ -951,7 +930,7 @@ func BenchmarkBuilder(b *testing.B) {
 
 	b.Run("with-version", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			_, _ = New(ServiceCatalog).
+			_, _ = New().
 				Resource("frameworks", "iso27001").
 				Version("v1.2.3").
 				Build()
