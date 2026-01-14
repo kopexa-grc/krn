@@ -83,6 +83,7 @@ issues:
         - dupl
         - gosec
         - goconst
+        - gocyclo
     - path: example_test\.go
       linters:
         - gocritic
