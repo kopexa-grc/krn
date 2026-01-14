@@ -221,6 +221,135 @@ func TestParse(t *testing.T) {
 			input:   "//kopexa.com/frameworks/iso27001@v1.2.3.4",
 			wantErr: ErrInvalidVersion,
 		},
+		// Service-based KRNs
+		{
+			name:  "KRN with service",
+			input: "//catalog.kopexa.com/frameworks/iso27001",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Service() != "catalog" {
+					t.Errorf("expected service catalog, got %s", k.Service())
+				}
+				if !k.HasService() {
+					t.Error("expected HasService to be true")
+				}
+				if k.FullDomain() != "catalog.kopexa.com" {
+					t.Errorf("expected full domain catalog.kopexa.com, got %s", k.FullDomain())
+				}
+				if k.String() != "//catalog.kopexa.com/frameworks/iso27001" {
+					t.Errorf("expected string //catalog.kopexa.com/frameworks/iso27001, got %s", k.String())
+				}
+			},
+		},
+		{
+			name:  "KRN with service and version",
+			input: "//isms.kopexa.com/tenants/acme-corp@v1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Service() != "isms" {
+					t.Errorf("expected service isms, got %s", k.Service())
+				}
+				if k.Version() != "v1" {
+					t.Errorf("expected version v1, got %s", k.Version())
+				}
+			},
+		},
+		{
+			name:  "KRN with service - nested",
+			input: "//policy.kopexa.com/frameworks/iso27001/controls/a-5-1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Service() != "policy" {
+					t.Errorf("expected service policy, got %s", k.Service())
+				}
+				if k.Depth() != 2 {
+					t.Errorf("expected depth 2, got %d", k.Depth())
+				}
+			},
+		},
+		{
+			name:  "KRN without service has empty service",
+			input: "//kopexa.com/frameworks/iso27001",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Service() != "" {
+					t.Errorf("expected empty service, got %s", k.Service())
+				}
+				if k.HasService() {
+					t.Error("expected HasService to be false")
+				}
+				if k.FullDomain() != "kopexa.com" {
+					t.Errorf("expected full domain kopexa.com, got %s", k.FullDomain())
+				}
+			},
+		},
+		{
+			name:    "invalid service name - uppercase",
+			input:   "//CATALOG.kopexa.com/frameworks/iso27001",
+			wantErr: ErrInvalidDomain,
+		},
+		{
+			name:    "invalid service name - starts with number",
+			input:   "//1catalog.kopexa.com/frameworks/iso27001",
+			wantErr: ErrInvalidDomain,
+		},
+		{
+			name:    "invalid service name - starts with dash",
+			input:   "//-catalog.kopexa.com/frameworks/iso27001",
+			wantErr: ErrInvalidDomain,
+		},
+		// Control number-style resource IDs (like "5.1.1")
+		{
+			name:  "control number with dots",
+			input: "//kopexa.com/frameworks/iso27001/controls/5.1.1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Basename() != "5.1.1" {
+					t.Errorf("expected basename 5.1.1, got %s", k.Basename())
+				}
+				id, err := k.ResourceID("controls")
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if id != "5.1.1" {
+					t.Errorf("expected control ID 5.1.1, got %s", id)
+				}
+			},
+		},
+		{
+			name:  "control number with dots and service",
+			input: "//catalog.kopexa.com/frameworks/iso27001/controls/5.1.1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Service() != "catalog" {
+					t.Errorf("expected service catalog, got %s", k.Service())
+				}
+				if k.Basename() != "5.1.1" {
+					t.Errorf("expected basename 5.1.1, got %s", k.Basename())
+				}
+			},
+		},
+		{
+			name:  "control number dash style",
+			input: "//kopexa.com/frameworks/iso27001/controls/5-1-1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Basename() != "5-1-1" {
+					t.Errorf("expected basename 5-1-1, got %s", k.Basename())
+				}
+			},
+		},
+		{
+			name:  "CIS control number style",
+			input: "//kopexa.com/frameworks/cis-aws/controls/1.1.1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Basename() != "1.1.1" {
+					t.Errorf("expected basename 1.1.1, got %s", k.Basename())
+				}
+			},
+		},
+		{
+			name:  "NIST control number style",
+			input: "//kopexa.com/frameworks/nist-csf/controls/PR.AC-1",
+			checkFunc: func(t *testing.T, k *KRN) {
+				if k.Basename() != "PR.AC-1" {
+					t.Errorf("expected basename PR.AC-1, got %s", k.Basename())
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -350,6 +479,41 @@ func TestIsValidVersion(t *testing.T) {
 		t.Run(tt.input, func(t *testing.T) {
 			if got := IsValidVersion(tt.input); got != tt.want {
 				t.Errorf("IsValidVersion(%q) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsValidService(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"catalog", true},
+		{"isms", true},
+		{"policy", true},
+		{"audit", true},
+		{"org", true},
+		{"a", true},
+		{"ab", true},
+		{"a1", true},
+		{"service-name", true},
+		{"my-service-123", true},
+		{"", false},
+		{"Catalog", false},      // uppercase not allowed
+		{"ISMS", false},         // all uppercase not allowed
+		{"1service", false},     // can't start with number
+		{"-service", false},     // can't start with dash
+		{"service-", false},     // can't end with dash (DNS label rules)
+		{"Service", false},      // mixed case not allowed
+		{"service_name", false}, // underscores not allowed
+		{"service.name", false}, // dots not allowed
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			if got := IsValidService(tt.input); got != tt.want {
+				t.Errorf("IsValidService(%q) = %v, want %v", tt.input, got, tt.want)
 			}
 		})
 	}
@@ -637,6 +801,110 @@ func TestKRN_WithoutVersion(t *testing.T) {
 	}
 }
 
+func TestKRN_WithService(t *testing.T) {
+	k := MustParse("//kopexa.com/frameworks/iso27001")
+
+	t.Run("add service", func(t *testing.T) {
+		withService, err := k.WithService("catalog")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if withService.Service() != "catalog" {
+			t.Errorf("got %q, want %q", withService.Service(), "catalog")
+		}
+		if withService.String() != "//catalog.kopexa.com/frameworks/iso27001" {
+			t.Errorf("got %q, want %q", withService.String(), "//catalog.kopexa.com/frameworks/iso27001")
+		}
+		// Original should be unchanged
+		if k.HasService() {
+			t.Error("original should not have service")
+		}
+	})
+
+	t.Run("invalid service", func(t *testing.T) {
+		_, err := k.WithService("Invalid")
+		if !errors.Is(err, ErrInvalidDomain) {
+			t.Errorf("expected ErrInvalidDomain, got %v", err)
+		}
+	})
+
+	t.Run("preserves version", func(t *testing.T) {
+		versioned := MustParse("//kopexa.com/frameworks/iso27001@v1")
+		withService, err := versioned.WithService("catalog")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if withService.Version() != "v1" {
+			t.Errorf("expected version v1, got %s", withService.Version())
+		}
+		if withService.String() != "//catalog.kopexa.com/frameworks/iso27001@v1" {
+			t.Errorf("got %q, want %q", withService.String(), "//catalog.kopexa.com/frameworks/iso27001@v1")
+		}
+	})
+}
+
+func TestKRN_WithoutService(t *testing.T) {
+	k := MustParse("//catalog.kopexa.com/frameworks/iso27001")
+
+	withoutService := k.WithoutService()
+	if withoutService.HasService() {
+		t.Error("expected no service")
+	}
+	if withoutService.String() != "//kopexa.com/frameworks/iso27001" {
+		t.Errorf("got %q, want %q", withoutService.String(), "//kopexa.com/frameworks/iso27001")
+	}
+	// Original should be unchanged
+	if !k.HasService() {
+		t.Error("original should still have service")
+	}
+}
+
+func TestKRN_ServicePreservation(t *testing.T) {
+	t.Run("Parent preserves service", func(t *testing.T) {
+		k := MustParse("//catalog.kopexa.com/frameworks/iso27001/controls/a-5-1")
+		parent := k.Parent()
+		if parent.Service() != "catalog" {
+			t.Errorf("expected service catalog, got %s", parent.Service())
+		}
+		if parent.String() != "//catalog.kopexa.com/frameworks/iso27001" {
+			t.Errorf("got %q, want %q", parent.String(), "//catalog.kopexa.com/frameworks/iso27001")
+		}
+	})
+
+	t.Run("WithVersion preserves service", func(t *testing.T) {
+		k := MustParse("//catalog.kopexa.com/frameworks/iso27001")
+		versioned, err := k.WithVersion("v1")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if versioned.Service() != "catalog" {
+			t.Errorf("expected service catalog, got %s", versioned.Service())
+		}
+	})
+
+	t.Run("WithoutVersion preserves service", func(t *testing.T) {
+		k := MustParse("//catalog.kopexa.com/frameworks/iso27001@v1")
+		unversioned := k.WithoutVersion()
+		if unversioned.Service() != "catalog" {
+			t.Errorf("expected service catalog, got %s", unversioned.Service())
+		}
+	})
+
+	t.Run("NewChild preserves service", func(t *testing.T) {
+		parent := MustParse("//catalog.kopexa.com/frameworks/iso27001")
+		child, err := NewChild(parent, "controls", "a-5-1")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if child.Service() != "catalog" {
+			t.Errorf("expected service catalog, got %s", child.Service())
+		}
+		if child.String() != "//catalog.kopexa.com/frameworks/iso27001/controls/a-5-1" {
+			t.Errorf("got %q, want %q", child.String(), "//catalog.kopexa.com/frameworks/iso27001/controls/a-5-1")
+		}
+	})
+}
+
 func TestKRN_Equals(t *testing.T) {
 	k1 := MustParse("//kopexa.com/frameworks/iso27001")
 	k2 := MustParse("//kopexa.com/frameworks/iso27001")
@@ -791,6 +1059,46 @@ func TestBuilder(t *testing.T) {
 		}
 		if k.String() != "//kopexa.com/frameworks/iso27001@v1" {
 			t.Errorf("got %q", k.String())
+		}
+	})
+
+	t.Run("with service", func(t *testing.T) {
+		k, err := New().
+			Service("catalog").
+			Resource("frameworks", "iso27001").
+			Build()
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if k.String() != "//catalog.kopexa.com/frameworks/iso27001" {
+			t.Errorf("got %q", k.String())
+		}
+		if k.Service() != "catalog" {
+			t.Errorf("expected service catalog, got %s", k.Service())
+		}
+	})
+
+	t.Run("with service and version", func(t *testing.T) {
+		k, err := New().
+			Service("isms").
+			Resource("tenants", "acme-corp").
+			Version("v1").
+			Build()
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if k.String() != "//isms.kopexa.com/tenants/acme-corp@v1" {
+			t.Errorf("got %q", k.String())
+		}
+	})
+
+	t.Run("invalid service", func(t *testing.T) {
+		_, err := New().
+			Service("Invalid").
+			Resource("frameworks", "iso27001").
+			Build()
+		if !errors.Is(err, ErrInvalidDomain) {
+			t.Errorf("expected ErrInvalidDomain, got %v", err)
 		}
 	})
 

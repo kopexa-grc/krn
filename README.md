@@ -20,25 +20,27 @@ go get github.com/kopexa-grc/krn
 
 ```
 //kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
+//{service}.kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
 ```
 
 ### Components
 
 | Component | Description | Example |
 |-----------|-------------|---------|
+| Service | Optional service subdomain | `catalog`, `isms`, `policy` |
 | Domain | Always `kopexa.com` | `kopexa.com` |
 | Collection | Resource type (plural) | `frameworks`, `controls`, `tenants` |
-| Resource ID | Unique identifier | `iso27001`, `a-5-1`, `acme-corp` |
+| Resource ID | Unique identifier | `iso27001`, `5.1.1`, `acme-corp` |
 | Version | Optional version tag | `@v1`, `@v1.2.3`, `@latest`, `@draft` |
 
 ### Examples
 
 ```
-//kopexa.com/controls/ctrl-123
 //kopexa.com/frameworks/iso27001
-//kopexa.com/frameworks/iso27001/controls/a-5-1
-//kopexa.com/frameworks/iso27001/controls/a-5-1@v2
-//kopexa.com/tenants/acme-corp/workspaces/main
+//kopexa.com/frameworks/iso27001/controls/5.1.1
+//catalog.kopexa.com/frameworks/iso27001
+//catalog.kopexa.com/frameworks/iso27001/controls/5.1.1@v2
+//isms.kopexa.com/tenants/acme-corp/workspaces/main
 ```
 
 ## Usage
@@ -79,6 +81,13 @@ k, err := krn.New().
     Version("v2").
     Build()
 // Result: //kopexa.com/frameworks/iso27001/controls/a-5-1@v2
+
+// Build a KRN with service
+k, err := krn.New().
+    Service("catalog").
+    Resource("frameworks", "iso27001").
+    Build()
+// Result: //catalog.kopexa.com/frameworks/iso27001
 ```
 
 ### Creating Child KRNs
@@ -101,18 +110,21 @@ child, err := krn.NewChildFromString(
 ### Extracting Information
 
 ```go
-k := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1@v1")
+k := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001/controls/5.1.1@v1")
 
-k.Path()              // "frameworks/iso27001/controls/a-5-1"
+k.Service()           // "catalog"
+k.HasService()        // true
+k.FullDomain()        // "catalog.kopexa.com"
+k.Path()              // "frameworks/iso27001/controls/5.1.1"
 k.Version()           // "v1"
 k.HasVersion()        // true
-k.Basename()          // "a-5-1"
+k.Basename()          // "5.1.1"
 k.BasenameCollection() // "controls"
 k.Depth()             // 2
 
 // Get resource ID by collection
 frameworkID, err := k.ResourceID("frameworks") // "iso27001"
-controlID := k.MustResourceID("controls")      // "a-5-1"
+controlID := k.MustResourceID("controls")      // "5.1.1"
 
 // Check if a collection exists
 k.HasResource("frameworks") // true
@@ -152,6 +164,21 @@ unversioned := k2.WithoutVersion()
 // Result: //kopexa.com/frameworks/iso27001
 ```
 
+### Service Manipulation
+
+```go
+k := krn.MustParse("//kopexa.com/frameworks/iso27001")
+
+// Add service
+withService, err := k.WithService("catalog")
+// Result: //catalog.kopexa.com/frameworks/iso27001
+
+// Remove service
+k2 := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001")
+withoutService := k2.WithoutService()
+// Result: //kopexa.com/frameworks/iso27001
+```
+
 ### Comparison
 
 ```go
@@ -167,16 +194,20 @@ k1.EqualsString("//kopexa.com/frameworks/iso27001")  // true
 A common use case is mapping controls between frameworks:
 
 ```go
-// Framework A control
-controlA := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
+// ISO 27001 control (using dot notation for control numbers)
+controlA := krn.MustParse("//catalog.kopexa.com/frameworks/iso27001/controls/5.1.1")
 
-// Framework B control that maps to it
-controlB := krn.MustParse("//kopexa.com/frameworks/nist-csf/controls/pr-ac-1")
+// CIS control that maps to it
+controlB := krn.MustParse("//catalog.kopexa.com/frameworks/cis-aws/controls/1.1.1")
+
+// NIST CSF control
+controlC := krn.MustParse("//catalog.kopexa.com/frameworks/nist-csf/controls/PR.AC-1")
 
 // In a mapping file:
-// - krn: //kopexa.com/frameworks/iso27001/controls/a-5-1
+// - krn: //catalog.kopexa.com/frameworks/iso27001/controls/5.1.1
 //   maps_to:
-//     - krn: //kopexa.com/frameworks/nist-csf/controls/pr-ac-1
+//     - krn: //catalog.kopexa.com/frameworks/cis-aws/controls/1.1.1
+//     - krn: //catalog.kopexa.com/frameworks/nist-csf/controls/PR.AC-1
 ```
 
 ### Utility Functions
@@ -195,9 +226,23 @@ krn.IsValidVersion("v1.2.3")  // true
 krn.IsValidVersion("latest")  // true
 krn.IsValidVersion("invalid") // false
 
+// Validate service names
+krn.IsValidService("catalog") // true
+krn.IsValidService("Catalog") // false (must be lowercase)
+krn.IsValidService("1svc")    // false (can't start with number)
+
 // Convert strings to valid resource IDs
 krn.SafeResourceID("Hello World!") // "Hello-World"
 ```
+
+## Service Name Rules
+
+Service names must follow DNS label rules:
+
+- Length: 1-63 characters
+- Allowed characters: `a-z`, `0-9`, `-`
+- Must start with a letter
+- Cannot end with `-`
 
 ## Resource ID Rules
 

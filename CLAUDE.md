@@ -8,7 +8,13 @@ KRN (Kopexa Resource Names) is a Go package implementing resource identifiers fo
 
 ```
 //kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
+//{service}.kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
 ```
+
+Examples:
+- `//kopexa.com/frameworks/iso27001` - Simple KRN without service
+- `//catalog.kopexa.com/frameworks/iso27001/controls/5.1.1` - With service and dot-notation control ID
+- `//isms.kopexa.com/tenants/acme-corp/workspaces/main@v1` - With service and version
 
 ## Build & Test Commands
 

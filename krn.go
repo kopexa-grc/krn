@@ -6,14 +6,15 @@
 // KRN Format:
 //
 //	//kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
+//	//{service}.kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
 //
 // Examples:
 //
-//	//kopexa.com/controls/ctrl-123
 //	//kopexa.com/frameworks/iso27001
 //	//kopexa.com/frameworks/iso27001/controls/a-5-1
+//	//catalog.kopexa.com/frameworks/iso27001
+//	//isms.kopexa.com/tenants/acme-corp/workspaces/main
 //	//kopexa.com/frameworks/iso27001/controls/a-5-1@v2
-//	//kopexa.com/tenants/acme-corp/workspaces/main
 package krn
 
 import (
@@ -44,6 +45,9 @@ var (
 
 	// versionPattern validates version strings: v1, v1.2, v1.2.3, latest, draft
 	versionPattern = regexp.MustCompile(`^(v\d+(\.\d+){0,2}|latest|draft)$`)
+
+	// servicePattern validates service names: lowercase alphanumeric, 1-63 chars (DNS label)
+	servicePattern = regexp.MustCompile(`^[a-z][a-z0-9-]{0,61}[a-z0-9]$|^[a-z]$`)
 )
 
 // Segment represents a collection/resource-id pair in a KRN path.
@@ -54,6 +58,7 @@ type Segment struct {
 
 // KRN represents a Kopexa Resource Name.
 type KRN struct {
+	service  string // Optional service name (e.g., "catalog", "isms")
 	segments []Segment
 	version  string
 }
@@ -88,9 +93,21 @@ func Parse(s string) (*KRN, error) {
 		return nil, fmt.Errorf("%w: must have at least domain/collection/id", ErrInvalidKRN)
 	}
 
-	// Validate domain
-	if parts[0] != Domain {
-		return nil, fmt.Errorf("%w: expected %s, got %s", ErrInvalidDomain, Domain, parts[0])
+	// Parse domain - can be "kopexa.com" or "{service}.kopexa.com"
+	var service string
+	domain := parts[0]
+
+	if domain == Domain {
+		// Simple case: //kopexa.com/...
+		service = ""
+	} else if strings.HasSuffix(domain, "."+Domain) {
+		// Service case: //{service}.kopexa.com/...
+		service = strings.TrimSuffix(domain, "."+Domain)
+		if !IsValidService(service) {
+			return nil, fmt.Errorf("%w: invalid service name %s", ErrInvalidDomain, service)
+		}
+	} else {
+		return nil, fmt.Errorf("%w: expected %s or {service}.%s, got %s", ErrInvalidDomain, Domain, Domain, domain)
 	}
 
 	// Parse resource path (must be pairs of collection/id)
@@ -118,6 +135,7 @@ func Parse(s string) (*KRN, error) {
 	}
 
 	return &KRN{
+		service:  service,
 		segments: segments,
 		version:  version,
 	}, nil
@@ -149,6 +167,15 @@ func IsValidResourceID(id string) bool {
 // IsValidVersion checks if a string is a valid version.
 func IsValidVersion(v string) bool {
 	return versionPattern.MatchString(v)
+}
+
+// IsValidService checks if a string is a valid service name.
+// Service names must be lowercase, start with a letter, and contain only alphanumeric characters and hyphens.
+func IsValidService(s string) bool {
+	if s == "" {
+		return false
+	}
+	return servicePattern.MatchString(s)
 }
 
 // SafeResourceID converts a string to a valid resource ID by replacing invalid characters.
@@ -195,6 +222,11 @@ func GetResource(krnString, collection string) (string, error) {
 func (k *KRN) String() string {
 	var sb strings.Builder
 	sb.WriteString("//")
+
+	if k.service != "" {
+		sb.WriteString(k.service)
+		sb.WriteString(".")
+	}
 	sb.WriteString(Domain)
 
 	for _, seg := range k.segments {
@@ -234,6 +266,53 @@ func (k *KRN) Version() string {
 // HasVersion returns true if the KRN has a version.
 func (k *KRN) HasVersion() bool {
 	return k.version != ""
+}
+
+// Service returns the service name, or empty if no service.
+func (k *KRN) Service() string {
+	return k.service
+}
+
+// HasService returns true if the KRN has a service.
+func (k *KRN) HasService() bool {
+	return k.service != ""
+}
+
+// FullDomain returns the full domain including service if present.
+// Examples: "kopexa.com" or "catalog.kopexa.com"
+func (k *KRN) FullDomain() string {
+	if k.service != "" {
+		return k.service + "." + Domain
+	}
+	return Domain
+}
+
+// WithService returns a new KRN with the specified service.
+func (k *KRN) WithService(service string) (*KRN, error) {
+	if !IsValidService(service) {
+		return nil, fmt.Errorf("%w: invalid service name %s", ErrInvalidDomain, service)
+	}
+
+	newSegments := make([]Segment, len(k.segments))
+	copy(newSegments, k.segments)
+
+	return &KRN{
+		service:  service,
+		segments: newSegments,
+		version:  k.version,
+	}, nil
+}
+
+// WithoutService returns a new KRN without the service.
+func (k *KRN) WithoutService() *KRN {
+	newSegments := make([]Segment, len(k.segments))
+	copy(newSegments, k.segments)
+
+	return &KRN{
+		service:  "",
+		segments: newSegments,
+		version:  k.version,
+	}
 }
 
 // ResourceID returns the resource ID for a given collection.
@@ -291,6 +370,7 @@ func (k *KRN) Parent() *KRN {
 	copy(newSegments, k.segments[:len(k.segments)-1])
 
 	return &KRN{
+		service:  k.service,
 		segments: newSegments,
 		version:  "", // Parent doesn't inherit version
 	}
@@ -306,6 +386,7 @@ func (k *KRN) WithVersion(version string) (*KRN, error) {
 	copy(newSegments, k.segments)
 
 	return &KRN{
+		service:  k.service,
 		segments: newSegments,
 		version:  version,
 	}, nil
@@ -317,6 +398,7 @@ func (k *KRN) WithoutVersion() *KRN {
 	copy(newSegments, k.segments)
 
 	return &KRN{
+		service:  k.service,
 		segments: newSegments,
 		version:  "",
 	}
@@ -371,6 +453,7 @@ func NewChild(parent *KRN, collection, resourceID string) (*KRN, error) {
 	}
 
 	return &KRN{
+		service:  parent.service,
 		segments: newSegments,
 		version:  "", // Child doesn't inherit version
 	}, nil
@@ -387,6 +470,7 @@ func NewChildFromString(parentKRN, collection, resourceID string) (*KRN, error) 
 
 // Builder provides a fluent API for building KRNs.
 type Builder struct {
+	service  string
 	segments []Segment
 	version  string
 	err      error
@@ -397,6 +481,21 @@ func New() *Builder {
 	return &Builder{
 		segments: make([]Segment, 0),
 	}
+}
+
+// Service sets the service for the KRN (optional).
+func (b *Builder) Service(service string) *Builder {
+	if b.err != nil {
+		return b
+	}
+
+	if !IsValidService(service) {
+		b.err = fmt.Errorf("%w: invalid service name %s", ErrInvalidDomain, service)
+		return b
+	}
+
+	b.service = service
+	return b
 }
 
 // Resource adds a resource segment to the builder.
@@ -448,6 +547,7 @@ func (b *Builder) Build() (*KRN, error) {
 	}
 
 	return &KRN{
+		service:  b.service,
 		segments: b.segments,
 		version:  b.version,
 	}, nil
