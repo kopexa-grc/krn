@@ -15,7 +15,32 @@
       "Bash(git push:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
-      "Bash(gofmt:*)"
+      "Bash(gofmt:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh release:*)",
+      "Bash(npm install)",
+      "Bash(pnpm install)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm test:coverage:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm lint:fix:*)",
+      "Bash(gh repo create:*)",
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm update:*)",
+      "Bash(pnpm biome:*)",
+      "Bash(gh api:*)",
+      "Bash(gh label list:*)",
+      "Bash(npm config set:*)",
+      "Bash(pnpm publish:*)",
+      "Bash(npm config delete:*)",
+      "Bash(npm view:*)",
+      "Bash(git pull:*)",
+      "Bash(gh pr update-branch:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git submodule add:*)"
     ]
   }
 }
