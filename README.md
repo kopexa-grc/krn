@@ -19,7 +19,7 @@ go get github.com/kopexa-grc/krn
 ### Format
 
 ```
-//kopexa.com/{service}/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
+//kopexa.com/{collection}/{resource-id}[/{collection}/{resource-id}][@{version}]
 ```
 
 ### Components
@@ -27,7 +27,6 @@ go get github.com/kopexa-grc/krn
 | Component | Description | Example |
 |-----------|-------------|---------|
 | Domain | Always `kopexa.com` | `kopexa.com` |
-| Service | The Kopexa service | `catalog`, `isms`, `org`, `audit`, `policy` |
 | Collection | Resource type (plural) | `frameworks`, `controls`, `tenants` |
 | Resource ID | Unique identifier | `iso27001`, `a-5-1`, `acme-corp` |
 | Version | Optional version tag | `@v1`, `@v1.2.3`, `@latest`, `@draft` |
@@ -35,12 +34,11 @@ go get github.com/kopexa-grc/krn
 ### Examples
 
 ```
-//kopexa.com/catalog/frameworks/iso27001
-//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1
-//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1@v2
-//kopexa.com/isms/tenants/acme-corp/control-implementations/ci-123
-//kopexa.com/isms/tenants/acme-corp/control-implementations/ci-123/evidences/ev-456
-//kopexa.com/org/tenants/acme-corp/workspaces/ws-main
+//kopexa.com/controls/ctrl-123
+//kopexa.com/frameworks/iso27001
+//kopexa.com/frameworks/iso27001/controls/a-5-1
+//kopexa.com/frameworks/iso27001/controls/a-5-1@v2
+//kopexa.com/tenants/acme-corp/workspaces/main
 ```
 
 ## Usage
@@ -51,13 +49,13 @@ go get github.com/kopexa-grc/krn
 import "github.com/kopexa-grc/krn"
 
 // Parse a KRN string
-k, err := krn.Parse("//kopexa.com/catalog/frameworks/iso27001")
+k, err := krn.Parse("//kopexa.com/frameworks/iso27001")
 if err != nil {
     log.Fatal(err)
 }
 
 // Use MustParse when you're confident the string is valid
-k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+k := krn.MustParse("//kopexa.com/frameworks/iso27001")
 
 // Check if a string is a valid KRN
 if krn.IsValid(s) {
@@ -69,37 +67,32 @@ if krn.IsValid(s) {
 
 ```go
 // Build a simple KRN
-k, err := krn.New(krn.ServiceCatalog).
+k, err := krn.New().
     Resource("frameworks", "iso27001").
     Build()
-// Result: //kopexa.com/catalog/frameworks/iso27001
+// Result: //kopexa.com/frameworks/iso27001
 
 // Build a nested KRN with version
-k, err := krn.New(krn.ServiceCatalog).
+k, err := krn.New().
     Resource("frameworks", "iso27001").
     Resource("controls", "a-5-1").
     Version("v2").
     Build()
-// Result: //kopexa.com/catalog/frameworks/iso27001/controls/a-5-1@v2
-
-// Use MustBuild when you're confident the inputs are valid
-k := krn.New(krn.ServiceISMS).
-    Resource("tenants", "acme-corp").
-    MustBuild()
+// Result: //kopexa.com/frameworks/iso27001/controls/a-5-1@v2
 ```
 
 ### Creating Child KRNs
 
 ```go
-parent := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+parent := krn.MustParse("//kopexa.com/frameworks/iso27001")
 
 // Create a child KRN
 child, err := krn.NewChild(parent, "controls", "a-5-1")
-// Result: //kopexa.com/catalog/frameworks/iso27001/controls/a-5-1
+// Result: //kopexa.com/frameworks/iso27001/controls/a-5-1
 
 // Or from a string
 child, err := krn.NewChildFromString(
-    "//kopexa.com/isms/tenants/acme-corp",
+    "//kopexa.com/tenants/acme-corp",
     "workspaces",
     "main",
 )
@@ -108,9 +101,8 @@ child, err := krn.NewChildFromString(
 ### Extracting Information
 
 ```go
-k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1@v1")
+k := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1@v1")
 
-k.Service()           // "catalog"
 k.Path()              // "frameworks/iso27001/controls/a-5-1"
 k.Version()           // "v1"
 k.HasVersion()        // true
@@ -135,46 +127,63 @@ for _, seg := range k.Segments() {
 ### Working with Parents
 
 ```go
-k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001/controls/a-5-1")
+k := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
 
 parent := k.Parent()
-// Result: //kopexa.com/catalog/frameworks/iso27001
+// Result: //kopexa.com/frameworks/iso27001
 
 // Root resources return nil
-root := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+root := krn.MustParse("//kopexa.com/frameworks/iso27001")
 root.Parent() // nil
 ```
 
 ### Version Manipulation
 
 ```go
-k := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+k := krn.MustParse("//kopexa.com/frameworks/iso27001")
 
 // Add version
 versioned, err := k.WithVersion("v1.2.3")
-// Result: //kopexa.com/catalog/frameworks/iso27001@v1.2.3
+// Result: //kopexa.com/frameworks/iso27001@v1.2.3
 
 // Remove version
-k2 := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001@v1")
+k2 := krn.MustParse("//kopexa.com/frameworks/iso27001@v1")
 unversioned := k2.WithoutVersion()
-// Result: //kopexa.com/catalog/frameworks/iso27001
+// Result: //kopexa.com/frameworks/iso27001
 ```
 
 ### Comparison
 
 ```go
-k1 := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
-k2 := krn.MustParse("//kopexa.com/catalog/frameworks/iso27001")
+k1 := krn.MustParse("//kopexa.com/frameworks/iso27001")
+k2 := krn.MustParse("//kopexa.com/frameworks/iso27001")
 
-k1.Equals(k2)                                              // true
-k1.EqualsString("//kopexa.com/catalog/frameworks/iso27001") // true
+k1.Equals(k2)                                        // true
+k1.EqualsString("//kopexa.com/frameworks/iso27001")  // true
+```
+
+### Control Mapping Example
+
+A common use case is mapping controls between frameworks:
+
+```go
+// Framework A control
+controlA := krn.MustParse("//kopexa.com/frameworks/iso27001/controls/a-5-1")
+
+// Framework B control that maps to it
+controlB := krn.MustParse("//kopexa.com/frameworks/nist-csf/controls/pr-ac-1")
+
+// In a mapping file:
+// - krn: //kopexa.com/frameworks/iso27001/controls/a-5-1
+//   maps_to:
+//     - krn: //kopexa.com/frameworks/nist-csf/controls/pr-ac-1
 ```
 
 ### Utility Functions
 
 ```go
 // Quick resource extraction from string
-id, err := krn.GetResource("//kopexa.com/catalog/frameworks/iso27001", "frameworks")
+id, err := krn.GetResource("//kopexa.com/frameworks/iso27001", "frameworks")
 // Result: "iso27001"
 
 // Validate resource IDs
@@ -221,8 +230,6 @@ if err != nil {
         // Handle invalid format
     case errors.Is(err, krn.ErrInvalidDomain):
         // Handle wrong domain
-    case errors.Is(err, krn.ErrInvalidService):
-        // Handle unknown service
     case errors.Is(err, krn.ErrInvalidResourceID):
         // Handle invalid resource ID
     case errors.Is(err, krn.ErrInvalidVersion):
@@ -231,18 +238,6 @@ if err != nil {
         // Handle missing resource
     }
 }
-```
-
-## Services
-
-Available service constants:
-
-```go
-krn.ServiceCatalog  // "catalog"
-krn.ServiceISMS     // "isms"
-krn.ServiceOrg      // "org"
-krn.ServiceAudit    // "audit"
-krn.ServicePolicy   // "policy"
 ```
 
 ## License
