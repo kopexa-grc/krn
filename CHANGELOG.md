@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/kopexa-grc/krn/compare/v1.0.0...v1.0.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* enable submodule checkout in CI and fix gofmt ([e87a80c](https://github.com/kopexa-grc/krn/commit/e87a80c6a275bb8ed8323c9a47a38bcfbb9a89d8))
+
 ## 1.0.0 (2026-01-14)
 
 
