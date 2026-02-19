@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/kopexa-grc/krn/compare/v1.0.1...v1.1.0) (2026-02-19)
+
+
+### Features
+
+* add OSCAL-compatible version format ([dc53dba](https://github.com/kopexa-grc/krn/commit/dc53dba154bae2e07d20f8baf8723f45041d40a3))
+
 ## [1.0.1](https://github.com/kopexa-grc/krn/compare/v1.0.0...v1.0.1) (2026-01-14)
 
 
