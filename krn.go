@@ -43,8 +43,12 @@ var (
 	// Cannot start or end with - or .
 	resourceIDPattern = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9._-]{0,198}[a-zA-Z0-9])?$|^[a-zA-Z0-9]$`)
 
-	// versionPattern validates version strings: v1, v1.2, v1.2.3, latest, draft
-	versionPattern = regexp.MustCompile(`^(v\d+(\.\d+){0,2}|latest|draft)$`)
+	// versionPattern validates version strings (OSCAL-compatible):
+	// - Alphanumeric, dots, dashes, underscores allowed
+	// - Cannot start or end with dash or dot
+	// - "v" alone is checked separately in IsValidVersion
+	// Examples: v1, v1.2.3, 2022, 2022-01-15, 1.0.0, latest, draft
+	versionPattern = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?$`)
 
 	// servicePattern validates service names: lowercase alphanumeric, 1-63 chars (DNS label)
 	servicePattern = regexp.MustCompile(`^[a-z][a-z0-9-]{0,61}[a-z0-9]$|^[a-z]$`)
@@ -166,7 +170,12 @@ func IsValidResourceID(id string) bool {
 }
 
 // IsValidVersion checks if a string is a valid version.
+// Versions must be OSCAL-compatible: alphanumeric with dots, dashes, underscores.
+// Cannot start or end with dash or dot. "v" alone is invalid.
 func IsValidVersion(v string) bool {
+	if v == "" || v == "v" {
+		return false
+	}
 	return versionPattern.MatchString(v)
 }
 

@@ -207,18 +207,18 @@ func TestParse(t *testing.T) {
 			wantErr: ErrInvalidResourceID,
 		},
 		{
-			name:    "invalid version format",
-			input:   "//kopexa.com/frameworks/iso27001@invalid",
+			name:    "invalid version - v alone",
+			input:   "//kopexa.com/frameworks/iso27001@v",
 			wantErr: ErrInvalidVersion,
 		},
 		{
-			name:    "invalid version - missing v prefix",
-			input:   "//kopexa.com/frameworks/iso27001@1.0",
+			name:    "invalid version - starts with dash",
+			input:   "//kopexa.com/frameworks/iso27001@-1.0",
 			wantErr: ErrInvalidVersion,
 		},
 		{
-			name:    "invalid version - too many parts",
-			input:   "//kopexa.com/frameworks/iso27001@v1.2.3.4",
+			name:    "invalid version - ends with dot",
+			input:   "//kopexa.com/frameworks/iso27001@v1.2.",
 			wantErr: ErrInvalidVersion,
 		},
 		// Service-based KRNs
@@ -456,23 +456,42 @@ func TestIsValidVersion(t *testing.T) {
 		input string
 		want  bool
 	}{
+		// Semver with v prefix
 		{"v1", true},
 		{"v12", true},
 		{"v123", true},
 		{"v1.2", true},
 		{"v1.2.3", true},
 		{"v10.20.30", true},
+		{"v1.2.3.4", true},
+		// Special versions
 		{"latest", true},
 		{"draft", true},
+		// OSCAL-compatible: without v prefix
+		{"1", true},
+		{"1.0", true},
+		{"1.0.0", true},
+		// OSCAL-compatible: date versions
+		{"2022", true},
+		{"2022-01", true},
+		{"2022-01-15", true},
+		// OSCAL-compatible: arbitrary identifiers
+		{"rev1", true},
+		{"release-2", true},
+		{"version1", true},
+		{"release", true},
+		// Invalid versions
 		{"", false},
-		{"1", false},
-		{"1.0", false},
 		{"v", false},
-		{"v1.2.3.4", false},
 		{"v1.", false},
-		{"v.1", false},
-		{"version1", false},
-		{"release", false},
+		// Note: "v.1" is now valid as an OSCAL-compatible identifier
+		{"-starts-with-dash", false},
+		{"ends-with-dash-", false},
+		{".starts-with-dot", false},
+		{"ends-with-dot.", false},
+		{"has space", false},
+		{"has@symbol", false},
+		{"has/slash", false},
 	}
 
 	for _, tt := range tests {
@@ -778,7 +797,7 @@ func TestKRN_WithVersion(t *testing.T) {
 	})
 
 	t.Run("invalid version", func(t *testing.T) {
-		_, err := k.WithVersion("invalid")
+		_, err := k.WithVersion("-invalid")
 		if !errors.Is(err, ErrInvalidVersion) {
 			t.Errorf("expected ErrInvalidVersion, got %v", err)
 		}
@@ -1123,7 +1142,7 @@ func TestBuilder(t *testing.T) {
 	t.Run("invalid version", func(t *testing.T) {
 		_, err := New().
 			Resource("frameworks", "iso27001").
-			Version("invalid").
+			Version("-invalid").
 			Build()
 		if !errors.Is(err, ErrInvalidVersion) {
 			t.Errorf("expected ErrInvalidVersion, got %v", err)

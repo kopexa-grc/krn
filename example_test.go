@@ -170,8 +170,10 @@ func ExampleIsValidResourceID() {
 func ExampleIsValidVersion() {
 	fmt.Println(krn.IsValidVersion("v1.2.3"))
 	fmt.Println(krn.IsValidVersion("latest"))
-	fmt.Println(krn.IsValidVersion("invalid"))
+	fmt.Println(krn.IsValidVersion("2022"))
+	fmt.Println(krn.IsValidVersion("-invalid"))
 	// Output:
+	// true
 	// true
 	// true
 	// false
